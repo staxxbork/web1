@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Resumen Quincenal - Chamba App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Resumen por Quincenas
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if quincenas %}
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h5 class="text-info">{{ quincenas|length }}</h5>
+                                <small class="text-muted">Total Quincenas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h5 class="text-primary">{{ quincenas|sum(attribute='horas') }}</h5>
+                                <small class="text-muted">Total Horas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h5 class="text-success">${{ "%.2f"|format(quincenas|sum(attribute='ganancia')) }}</h5>
+                                <small class="text-muted">Total Ganancias</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% for quincena in quincenas %}
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar-check me-2"></i>
+                                Quincena {{ quincena.numero }}
+                            </h5>
+                            <div class="text-end">
+                                <span class="badge bg-primary">{{ quincena.horas }} hrs</span>
+                                <span class="badge bg-success">${{ "%.2f"|format(quincena.ganancia) }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for semana in quincena.semanas %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-calendar-week me-1"></i>
+                                                Semana {{ semana.numero }}
+                                            </h6>
+                                            <a href="{{ url_for('navegar_semanas', semana=semana.numero-1) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                        <div class="row text-center">
+                                            <div class="col-6">
+                                                <div class="text-primary">
+                                                    <strong>{{ semana.horas }}</strong>
+                                                    <br><small>horas</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-success">
+                                                    <strong>${{ "%.2f"|format(semana.ganancia) }}</strong>
+                                                    <br><small>ganancia</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="progress mt-2" style="height: 8px;">
+                                            <div class="progress-bar" 
+                                                 role="progressbar" 
+                                                 style="width: {{ (semana.horas/quincena.horas*100) if quincena.horas > 0 else 0 }}%"
+                                                 aria-valuenow="{{ semana.horas }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="{{ quincena.horas }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                
+                                {% if quincena.semanas|length == 1 %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3 h-100 bg-light">
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-calendar-plus fa-2x mb-2"></i>
+                                            <h6>Semana Pendiente</h6>
+                                            <small>Esta quincena está incompleta</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Estadísticas de la quincena -->
+                            <div class="row mt-3 pt-3 border-top">
+                                <div class="col-md-3 text-center">
+                                    <small class="text-muted">Promedio por semana</small>
+                                    <div class="fw-bold">{{ "%.1f"|format(quincena.horas/2) }} hrs</div>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <small class="text-muted">Promedio por día</small>
+                                    <div class="fw-bold">{{ "%.1f"|format(quincena.horas/12) }} hrs</div>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <small class="text-muted">Ganancia por día</small>
+                                    <div class="fw-bold text-success">${{ "%.2f"|format(quincena.ganancia/12) }}</div>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <small class="text-muted">Semanas completas</small>
+                                    <div class="fw-bold">{{ quincena.semanas|length }}/2</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay registros de quincenas</h5>
+                        <p class="text-muted">Comienza registrando tus primeras horas de trabajo.</p>
+                        <a href="{{ url_for('registrar_horas') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Registrar Horas
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

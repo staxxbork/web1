@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Horas - Chamba App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Registrar Horas de Trabajo
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if semana_completa %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        La semana actual está completa (6 días). Al registrar horas se iniciará una nueva semana.
+                    </div>
+                {% endif %}
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="text-center p-3 bg-light rounded">
+                            <h5 class="text-primary">Semana #{{ semana_numero }}</h5>
+                            <p class="mb-0 text-muted">{{ dia_actual if dia_actual != "Nueva semana" else "Día 1" }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-center p-3 bg-light rounded">
+                            <h5 class="text-success">$17/hora</h5>
+                            <p class="mb-0 text-muted">Tarifa actual</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="horas" class="form-label">
+                            <i class="fas fa-clock me-2"></i>
+                            Horas trabajadas hoy:
+                        </label>
+                        <input type="number" 
+                               class="form-control form-control-lg" 
+                               id="horas" 
+                               name="horas" 
+                               step="0.1" 
+                               min="0" 
+                               max="24" 
+                               placeholder="Ej: 8.5" 
+                               required 
+                               autofocus>
+                        <div class="form-text">
+                            Ingresa las horas en formato decimal (ej: 8.5 para 8 horas y 30 minutos)
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>
+                            Registrar Horas
+                        </button>
+                    </div>
+                </form>
+
+                {% if not semana_completa and dia_actual != "Nueva semana" and dia_actual > 1 %}
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <h6 class="text-muted mb-3">¿Quieres finalizar la semana actual?</h6>
+                        <form method="POST" style="display: inline;">
+                            <input type="hidden" name="accion" value="terminar">
+                            <button type="submit" class="btn btn-outline-warning" 
+                                    onclick="return confirm('¿Estás seguro de que quieres finalizar la semana actual?')">
+                                <i class="fas fa-flag-checkered me-2"></i>
+                                Terminar Semana
+                            </button>
+                        </form>
+                        <div class="form-text mt-2">
+                            Esto iniciará una nueva semana en el próximo registro
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Calculadora rápida -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-calculator me-2"></i>
+                    Calculadora Rápida
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Horas:</label>
+                        <input type="number" class="form-control" id="calc-horas" step="0.1" min="0" placeholder="8">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ganancia:</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="text" class="form-control" id="calc-ganancia" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Calculadora en tiempo real
+    document.getElementById('calc-horas').addEventListener('input', function() {
+        const horas = parseFloat(this.value) || 0;
+        const ganancia = horas * 17;
+        document.getElementById('calc-ganancia').value = ganancia.toFixed(2);
+    });
+    
+    // Auto-calcular cuando se escribe en el campo principal
+    document.getElementById('horas').addEventListener('input', function() {
+        const horas = parseFloat(this.value) || 0;
+        const ganancia = horas * 17;
+        document.getElementById('calc-horas').value = this.value;
+        document.getElementById('calc-ganancia').value = ganancia.toFixed(2);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Resumen Mensual - Chamba App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-calendar me-2"></i>
+                    Resumen por Meses
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if meses %}
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h5 class="text-success">{{ meses|length }}</h5>
+                                <small class="text-muted">Total Meses</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h5 class="text-primary">{{ meses|sum(attribute='horas') }}</h5>
+                                <small class="text-muted">Total Horas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h5 class="text-success">${{ "%.2f"|format(meses|sum(attribute='ganancia')) }}</h5>
+                                <small class="text-muted">Total Ganancias</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h5 class="text-info">${{ "%.2f"|format((meses|sum(attribute='ganancia'))/meses|length) if meses|length > 0 else 0 }}</h5>
+                                <small class="text-muted">Promedio/Mes</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        {% for mes in meses %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-calendar-alt me-2"></i>
+                                        Mes {{ mes.numero }}
+                                    </h5>
+                                    <div>
+                                        <span class="badge bg-primary">{{ mes.horas }} hrs</span>
+                                        <span class="badge bg-success">${{ "%.2f"|format(mes.ganancia) }}</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Estadísticas principales -->
+                                    <div class="row mb-3">
+                                        <div class="col-6 text-center">
+                                            <div class="border-end">
+                                                <h4 class="text-primary mb-1">{{ mes.horas }}</h4>
+                                                <small class="text-muted">Horas Totales</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 text-center">
+                                            <h4 class="text-success mb-1">${{ "%.2f"|format(mes.ganancia) }}</h4>
+                                            <small class="text-muted">Ganancias</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Métricas adicionales -->
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="p-2 bg-light rounded">
+                                                <div class="fw-bold text-info">{{ "%.1f"|format(mes.horas/4) }}</div>
+                                                <small class="text-muted">hrs/semana</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="p-2 bg-light rounded">
+                                                <div class="fw-bold text-warning">{{ "%.1f"|format(mes.horas/24) }}</div>
+                                                <small class="text-muted">hrs/día</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="p-2 bg-light rounded">
+                                                <div class="fw-bold text-success">${{ "%.0f"|format(mes.ganancia/24) }}</div>
+                                                <small class="text-muted">$/día</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Barra de progreso comparativa -->
+                                    {% set max_horas_mes = meses|map(attribute='horas')|max %}
+                                    <div class="mt-3">
+                                        <small class="text-muted">Comparación con el mejor mes:</small>
+                                        <div class="progress mt-1" style="height: 10px;">
+                                            <div class="progress-bar bg-gradient" 
+                                                 role="progressbar" 
+                                                 style="width: {{ (mes.horas/max_horas_mes*100) if max_horas_mes > 0 else 0 }}%"
+                                                 aria-valuenow="{{ mes.horas }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="{{ max_horas_mes }}">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Acciones -->
+                                    <div class="mt-3 d-grid">
+                                        <a href="{{ url_for('ver_semanas') }}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-chart-line me-1"></i>Ver Desglose Semanal
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Gráfico de tendencia -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Tendencia Mensual
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% set max_horas = meses|map(attribute='horas')|max %}
+                            {% for mes in meses %}
+                            <div class="mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3" style="width: 80px;">
+                                        <small class="fw-bold">Mes {{ mes.numero }}</small>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="progress" style="height: 30px;">
+                                            <div class="progress-bar bg-success" 
+                                                 role="progressbar" 
+                                                 style="width: {{ (mes.horas/max_horas*100) if max_horas > 0 else 0 }}%"
+                                                 aria-valuenow="{{ mes.horas }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="{{ max_horas }}">
+                                                <span class="text-white fw-bold">{{ mes.horas }}h - ${{ "%.0f"|format(mes.ganancia) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay registros mensuales</h5>
+                        <p class="text-muted">Comienza registrando tus primeras horas de trabajo.</p>
+                        <a href="{{ url_for('registrar_horas') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Registrar Horas
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

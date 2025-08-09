@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Modificar Horas - Chamba App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    Modificar Registros de Horas
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if semanas %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Atención:</strong> Los cambios se guardarán inmediatamente. Asegúrate de ingresar los valores correctos.
+                    </div>
+
+                    <!-- Formulario de modificación -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-pencil-alt me-2"></i>
+                                Modificar Registro
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="semana" class="form-label">Semana:</label>
+                                        <select class="form-select" id="semana" name="semana" required>
+                                            <option value="">Seleccionar semana...</option>
+                                            {% for semana in semanas %}
+                                            <option value="{{ semana.numero }}">Semana {{ semana.numero }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="dia" class="form-label">Día:</label>
+                                        <select class="form-select" id="dia" name="dia" required>
+                                            <option value="">Seleccionar día...</option>
+                                            {% for i in range(1, dias_por_semana + 1) %}
+                                            <option value="{{ i }}">Día {{ i }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="horas" class="form-label">Nuevas Horas:</label>
+                                        <input type="number" class="form-control" id="horas" name="horas" 
+                                               step="0.1" min="0" max="24" placeholder="8.5" required>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-save me-2"></i>Actualizar Registro
+                                        </button>
+                                        <div class="form-text mt-2">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Ganancia calculada: $<span id="ganancia-calculada">0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Vista de todas las semanas -->
+                    <div class="row">
+                        {% for semana in semanas %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-calendar-week me-1"></i>
+                                        Semana {{ semana.numero }}
+                                    </h6>
+                                    <span class="badge bg-primary">{{ semana.total_dias }} días registrados</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {% for dia in semana.dias %}
+                                        <div class="col-4 mb-3">
+                                            <div class="text-center p-2 border rounded 
+                                                        {{ 'bg-success text-white' if dia.horas > 0 else 'bg-light text-muted' }}" 
+                                                 data-semana="{{ semana.numero }}" 
+                                                 data-dia="{{ dia.numero }}" 
+                                                 data-horas="{{ dia.horas }}" 
+                                                 style="cursor: pointer;" 
+                                                 onclick="seleccionarRegistro(this)">
+                                                <div class="fw-bold">Día {{ dia.numero }}</div>
+                                                <div class="small">
+                                                    {% if dia.horas > 0 %}
+                                                        {{ dia.horas }}h
+                                                        <br>${{ "%.0f"|format(dia.horas * 17) }}
+                                                    {% else %}
+                                                        Sin registro
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <!-- Resumen de la semana -->
+                                    <div class="row mt-3 pt-3 border-top">
+                                        <div class="col-6 text-center">
+                                            <strong class="text-primary">{{ semana.dias|sum(attribute='horas') }} hrs</strong>
+                                            <br><small class="text-muted">Total semana</small>
+                                        </div>
+                                        <div class="col-6 text-center">
+                                            <strong class="text-success">${{ "%.2f"|format(semana.dias|sum(attribute='horas') * 17) }}</strong>
+                                            <br><small class="text-muted">Ganancias</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Instrucciones -->
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                Instrucciones
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Haz clic en cualquier día de las tarjetas para seleccionarlo automáticamente en el formulario</li>
+                                <li>Los días con registro aparecen en verde, los sin registro en gris</li>
+                                <li>Puedes modificar días existentes o agregar horas a días sin registro</li>
+                                <li>Las ganancias se calculan automáticamente a $17 por hora</li>
+                            </ul>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay registros para modificar</h5>
+                        <p class="text-muted">Comienza registrando tus primeras horas de trabajo.</p>
+                        <a href="{{ url_for('registrar_horas') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Registrar Horas
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Función para seleccionar un registro desde las tarjetas
+    function seleccionarRegistro(elemento) {
+        const semana = elemento.getAttribute('data-semana');
+        const dia = elemento.getAttribute('data-dia');
+        const horas = elemento.getAttribute('data-horas');
+        
+        document.getElementById('semana').value = semana;
+        document.getElementById('dia').value = dia;
+        document.getElementById('horas').value = horas;
+        
+        // Actualizar ganancia calculada
+        actualizarGanancia();
+        
+        // Scroll al formulario
+        document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+        
+        // Highlight del elemento seleccionado
+        document.querySelectorAll('[data-semana]').forEach(el => {
+            el.classList.remove('border-warning', 'border-3');
+        });
+        elemento.classList.add('border-warning', 'border-3');
+    }
+    
+    // Calcular ganancia en tiempo real
+    function actualizarGanancia() {
+        const horas = parseFloat(document.getElementById('horas').value) || 0;
+        const ganancia = horas * 17;
+        document.getElementById('ganancia-calculada').textContent = ganancia.toFixed(2);
+    }
+    
+    // Event listener para el campo de horas
+    document.getElementById('horas').addEventListener('input', actualizarGanancia);
+    
+    // Validación del formulario
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const semana = document.getElementById('semana').value;
+        const dia = document.getElementById('dia').value;
+        const horas = document.getElementById('horas').value;
+        
+        if (!semana || !dia || !horas) {
+            e.preventDefault();
+            alert('Por favor, completa todos los campos.');
+            return;
+        }
+        
+        if (parseFloat(horas) < 0 || parseFloat(horas) > 24) {
+            e.preventDefault();
+            alert('Las horas deben estar entre 0 y 24.');
+            return;
+        }
+        
+        if (!confirm(`¿Confirmas actualizar Semana ${semana}, Día ${dia} con ${horas} horas?`)) {
+            e.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

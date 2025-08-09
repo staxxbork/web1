@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Resumen Semanal - Chamba App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-calendar-week me-2"></i>
+                    Resumen por Semanas
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if semanas %}
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h5 class="text-primary">{{ semanas|length }}</h5>
+                                <small class="text-muted">Total Semanas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h5 class="text-info">{{ semanas|sum(attribute='horas') }}</h5>
+                                <small class="text-muted">Total Horas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h5 class="text-success">${{ "%.2f"|format(semanas|sum(attribute='ganancia')) }}</h5>
+                                <small class="text-muted">Total Ganancias</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th><i class="fas fa-hashtag me-1"></i>Semana</th>
+                                    <th><i class="fas fa-clock me-1"></i>Horas</th>
+                                    <th><i class="fas fa-dollar-sign me-1"></i>Ganancias</th>
+                                    <th><i class="fas fa-chart-bar me-1"></i>Promedio/Día</th>
+                                    <th><i class="fas fa-eye me-1"></i>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for semana in semanas %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">Semana {{ semana.numero }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ semana.horas }}</strong> hrs
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold">${{ "%.2f"|format(semana.ganancia) }}</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ "%.1f"|format(semana.horas/6) }} hrs/día</small>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('navegar_semanas', semana=semana.numero-1) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>Ver Detalles
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Gráfico simple con barras CSS -->
+                    <div class="mt-4">
+                        <h6>Gráfico de Horas por Semana</h6>
+                        {% set max_horas = semanas|map(attribute='horas')|max %}
+                        {% for semana in semanas %}
+                        <div class="mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3" style="width: 80px;">
+                                    <small>Sem {{ semana.numero }}</small>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="progress" style="height: 25px;">
+                                        <div class="progress-bar bg-gradient" 
+                                             role="progressbar" 
+                                             style="width: {{ (semana.horas/max_horas*100) if max_horas > 0 else 0 }}%"
+                                             aria-valuenow="{{ semana.horas }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="{{ max_horas }}">
+                                            {{ semana.horas }}h
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay registros de semanas</h5>
+                        <p class="text-muted">Comienza registrando tus primeras horas de trabajo.</p>
+                        <a href="{{ url_for('registrar_horas') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Registrar Horas
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

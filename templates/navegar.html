@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Navegar Semanas - Chamba App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        Explorar Registros - Semana {{ semana_actual }}
+                    </h4>
+                    <div>
+                        <span class="badge bg-dark">{{ semana_actual }}/{{ total_semanas }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Navegación entre semanas -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('navegar_semanas', semana=semana_idx-1) if semana_idx > 0 else '#' }}" 
+                               class="btn btn-outline-primary {{ 'disabled' if semana_idx == 0 else '' }}">
+                                <i class="fas fa-chevron-left me-1"></i>Anterior
+                            </a>
+                            
+                            <div class="text-center">
+                                <h5 class="mb-1">Semana {{ semana_actual }}</h5>
+                                <div class="btn-group" role="group">
+                                    {% for i in range(total_semanas) %}
+                                    <a href="{{ url_for('navegar_semanas', semana=i) }}" 
+                                       class="btn btn-sm {{ 'btn-primary' if i == semana_idx else 'btn-outline-secondary' }}">
+                                        {{ i + 1 }}
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <a href="{{ url_for('navegar_semanas', semana=semana_idx+1) if semana_idx < total_semanas-1 else '#' }}" 
+                               class="btn btn-outline-primary {{ 'disabled' if semana_idx == total_semanas-1 else '' }}">
+                                Siguiente<i class="fas fa-chevron-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen de la semana -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-primary text-white rounded">
+                            <h4 class="mb-1">{{ horas_semana }}</h4>
+                            <small>Horas Totales</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-success text-white rounded">
+                            <h4 class="mb-1">${{ "%.2f"|format(ganancia_semana) }}</h4>
+                            <small>Ganancias</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-info text-white rounded">
+                            <h4 class="mb-1">{{ "%.1f"|format(horas_semana/6) }}</h4>
+                            <small>Promedio/Día</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalles por día -->
+                <div class="row">
+                    {% for dia in dias %}
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="card h-100 {{ 'border-success' if dia.horas > 0 else 'border-light' }}">
+                            <div class="card-header {{ 'bg-success text-white' if dia.horas > 0 else 'bg-light' }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-calendar-day me-1"></i>
+                                        Día {{ dia.numero }}
+                                    </h6>
+                                    {% if dia.horas > 0 %}
+                                        <i class="fas fa-check-circle"></i>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-muted"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body text-center">
+                                {% if dia.horas > 0 %}
+                                    <h4 class="text-primary mb-2">{{ dia.horas }}</h4>
+                                    <p class="text-muted mb-2">horas trabajadas</p>
+                                    <h5 class="text-success mb-0">${{ "%.2f"|format(dia.ganancia) }}</h5>
+                                    <small class="text-muted">ganancia del día</small>
+                                {% else %}
+                                    <div class="text-muted">
+                                        <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                                        <p class="mb-0">Sin registro</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {% if dia.horas > 0 %}
+                            <div class="card-footer bg-transparent">
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" 
+                                         role="progressbar" 
+                                         style="width: {{ (dia.horas/12*100) if dia.horas <= 12 else 100 }}%"
+                                         aria-valuenow="{{ dia.horas }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="12">
+                                    </div>
+                                </div>
+                                <small class="text-muted">Intensidad del día</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Estadísticas adicionales -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Estadísticas de la Semana
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <div class="p-3 bg-light rounded">
+                                    <h5 class="text-primary">{{ dias|selectattr('horas', 'greaterthan', 0)|list|length }}</h5>
+                                    <small class="text-muted">Días trabajados</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="p-3 bg-light rounded">
+                                    <h5 class="text-warning">{{ (dias|map(attribute='horas')|max) if horas_semana > 0 else 0 }}</h5>
+                                    <small class="text-muted">Día más productivo</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="p-3 bg-light rounded">
+                                    <h5 class="text-info">{{ (dias|map(attribute='horas')|min) if horas_semana > 0 else 0 }}</h5>
+                                    <small class="text-muted">Día menos productivo</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="p-3 bg-light rounded">
+                                    <h5 class="text-success">${{ "%.0f"|format(ganancia_semana/7) if horas_semana > 0 else 0 }}</h5>
+                                    <small class="text-muted">Ganancia promedio/día</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('modificar_horas') }}" class="btn btn-warning me-2">
+                        <i class="fas fa-edit me-1"></i>Modificar Registros
+                    </a>
+                    <a href="{{ url_for('ver_semanas') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-1"></i>Ver Todas las Semanas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
