@@ -1,2 +1,128 @@
-web1
-web #
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Proyecto: Registro de Horas y Ganancias</title>
+  <style>
+    body { background: #f4f0fa; font-family: 'Segoe UI', Arial, sans-serif; color: #2a2050; padding: 2em; }
+    h1 { color: #a019a0; margin-bottom: 1em; }
+    h2 { color: #d04be3; margin-top: 2em; margin-bottom: 0.3em; }
+    pre { background: #222; color: #fafaff; padding: 1em; border-radius: 8px; max-width: 100%; overflow-x: auto; font-size: 13px; }
+    .code-box { box-shadow: 0 2px 8px #d04be344; margin-bottom: 2em; }
+    .file-title { font-size: 1.15em; color: #a019a0; margin-bottom: 0.5em; margin-top: 2em;}
+    nav { margin-bottom: 2em; }
+    nav a { color: #a019a0; margin-right: 1.5em; text-decoration: underline; font-weight: bold;}
+    .desc { background: #e6d9f5; border-radius: 8px; padding: 1em; margin-bottom: 2em; }
+    .credits { margin-top: 3em; color: #555; font-size: 0.95em; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Inicio</a>
+    <!-- Si tienes otras páginas, agrégalas aquí -->
+  </nav>
+
+  <h1>Proyecto: Registro de Horas y Ganancias</h1>
+  <div class="desc">
+    <p><strong>¿Qué es esto?</strong> <br>
+    Aquí ves el código fuente de <code>chamba.py</code> (consola) y <code>app.py</code> (aplicación web Flask).  
+    Todo tu trabajo, bien visible y ordenado.  
+    Si quieres ver los archivos originales, están en el repo.  
+    </p>
+  </div>
+
+  <div class="file-title">chamba.py</div>
+  <div class="code-box">
+<pre><code>
+import json
+import os
+import sys
+from colorama import init, Fore, Style
+
+# Inicializa colorama
+init(autoreset=True)
+
+def obtener_ruta_archivo(nombre_archivo):
+    if getattr(sys, 'frozen', False):  # Ejecutable PyInstaller
+        carpeta = os.path.dirname(sys.executable)
+    else:
+        carpeta = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(carpeta, nombre_archivo)
+
+ARCHIVO = obtener_ruta_archivo("trabajo.json")
+
+PAGO_POR_HORA = 17
+DIAS_POR_SEMANA = 6
+
+# Defino colores personalizados para "niña princesa"
+COLOR_TITULO = Fore.MAGENTA + Style.BRIGHT
+COLOR_SEPARADOR = Fore.LIGHTMAGENTA_EX
+COLOR_OPCION = Fore.LIGHTMAGENTA_EX + Style.BRIGHT
+COLOR_INPUT = Fore.MAGENTA
+COLOR_EXITO = Fore.LIGHTMAGENTA_EX
+COLOR_ERROR = Fore.LIGHTRED_EX + Style.BRIGHT
+COLOR_INFO = Fore.LIGHTMAGENTA_EX
+COLOR_DIA = Fore.LIGHTMAGENTA_EX + Style.BRIGHT
+COLOR_MENSAJE = Fore.LIGHTMAGENTA_EX
+
+def limpiar_pantalla():
+    os.system("cls" if os.name == "nt" else "clear")
+
+def cargar_datos():
+    if os.path.exists(ARCHIVO):
+        with open(ARCHIVO, "r") as f:
+            return json.load(f)
+    else:
+        return {"semanas": []}
+
+def guardar_datos(datos):
+    with open(ARCHIVO, "w") as f:
+        json.dump(datos, f, indent=4)
+
+def separador(titulo=""):
+    print(COLOR_SEPARADOR + "\n" + "=" * 50)
+    if titulo:
+        print(COLOR_TITULO + f"  {titulo}")
+        print(COLOR_SEPARADOR + "=" * 50 + Style.RESET_ALL)
+    else:
+        print(Style.RESET_ALL)
+
+# ... Sigue el código completo de chamba.py que subiste, hasta el final
+# (Puedes copiar todo el archivo aquí, está permitido mostrarlo completo)
+</code></pre>
+  </div>
+
+  <div class="file-title">app.py</div>
+  <div class="code-box">
+<pre><code>
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+import json
+import os
+import sys
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'tu_clave_secreta_aqui'  # Cambia esto por una clave más segura
+
+def obtener_ruta_archivo(nombre_archivo):
+    if getattr(sys, 'frozen', False):  # Ejecutable PyInstaller
+        carpeta = os.path.dirname(sys.executable)
+    else:
+        carpeta = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(carpeta, nombre_archivo)
+
+ARCHIVO = obtener_ruta_archivo("trabajo.json")
+PAGO_POR_HORA = 17
+DIAS_POR_SEMANA = 6
+
+# ... Sigue el código completo de app.py que subiste, hasta el final
+# (Puedes copiar todo el archivo aquí, está permitido mostrarlo completo)
+</code></pre>
+  </div>
+
+  <div class="credits">
+    <p>Hecho con amor por <b>staxxbork</b>.<br>
+    <code>Copilot</code> organizó todo para que se vea 😤✨</p>
+  </div>
+</body>
+</html>
